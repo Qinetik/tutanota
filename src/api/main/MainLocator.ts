@@ -4,7 +4,7 @@ import { EventController } from "./EventController"
 import { EntropyCollector } from "./EntropyCollector"
 import { SearchModel } from "../../search/model/SearchModel"
 import { MailboxDetail, MailModel } from "../../mail/model/MailModel"
-import { assertMainOrNode, getWebRoot, isAndroidApp, isApp, isBrowser, isDesktop, isElectronClient, isIOSApp, isOfflineStorageAvailable } from "../common/Env"
+import { assertMainOrNode, getWebRoot, isAndroidApp, isApp, isBrowser, isDesktop, isElectronClient, isIOSApp } from "../common/Env"
 import { notifications } from "../../gui/Notifications"
 import { LoginController } from "./LoginController"
 import type { ContactModel } from "../../contacts/model/ContactModel"
@@ -65,7 +65,6 @@ import { FileControllerBrowser } from "../../file/FileControllerBrowser.js"
 import { FileControllerNative } from "../../file/FileControllerNative.js"
 import { windowFacade } from "../../misc/WindowFacade.js"
 import { InterWindowEventFacadeSendDispatcher } from "../../native/common/generatedipc/InterWindowEventFacadeSendDispatcher.js"
-import { SqlCipherFacade } from "../../native/common/generatedipc/SqlCipherFacade.js"
 import { NewsModel } from "../../misc/news/NewsModel.js"
 import type { OwnMailAddressNameChanger } from "../../settings/mailaddress/OwnMailAddressNameChanger.js"
 import type { MailAddressNameChanger, MailAddressTableModel } from "../../settings/mailaddress/MailAddressTableModel.js"
@@ -147,7 +146,6 @@ class MainLocator {
 	workerFacade!: WorkerFacade
 	loginListener!: PageContextLoginListener
 	random!: WorkerRandomizer
-	sqlCipherFacade!: SqlCipherFacade
 	connectivityModel!: WebsocketConnectivityModel
 	operationProgressTracker!: OperationProgressTracker
 	infoMessageHandler!: InfoMessageHandler
@@ -539,6 +537,7 @@ class MainLocator {
 			eventBus,
 			entropyFacade,
 			workerFacade,
+			sqlCipherFacade,
 		} = this.worker.getWorkerInterface()
 		this.loginFacade = loginFacade
 		this.customerFacade = customerFacade
@@ -613,9 +612,6 @@ class MainLocator {
 			} else if (isAndroidApp() || isIOSApp()) {
 				this.webAuthn = new WebauthnClient(new WebAuthnFacadeSendDispatcher(this.native), getWebRoot())
 			}
-			if (isOfflineStorageAvailable()) {
-				this.sqlCipherFacade = this.nativeInterfaces.sqlCipherFacade
-			}
 		}
 
 		if (this.webAuthn == null) {
@@ -626,7 +622,7 @@ class MainLocator {
 		this.credentialsProvider = await createCredentialsProvider(
 			deviceEncryptionFacade,
 			this.nativeInterfaces?.native ?? null,
-			this.nativeInterfaces?.sqlCipherFacade ?? null,
+			sqlCipherFacade ?? null,
 			isDesktop() ? this.interWindowEventSender : null,
 		)
 		this.random = random
