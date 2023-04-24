@@ -12,7 +12,7 @@ import { create as createEnv, preludeEnvPlugin } from "./env.js"
 import cp from "node:child_process"
 import util from "node:util"
 import typescript from "@rollup/plugin-typescript"
-import { keytarNativePlugin, sqliteNativeBannerPlugin } from "./nativeLibraryRollupPlugin.js"
+import { keytarNativeBannerPlugin, sqliteNativeBannerPlugin } from "./nativeLibraryRollupPlugin.js"
 import { fileURLToPath } from "node:url"
 import { getCanonicalPlatformName } from "./buildUtils.js"
 
@@ -125,11 +125,14 @@ async function rollupDesktop(dirname, outDir, version, platform, disableMinify) 
 			}),
 			resolveLibs(),
 			nativeDepWorkaroundPlugin(),
-			keytarNativePlugin({
+			keytarNativeBannerPlugin({
 				rootDir: projectRoot,
 				platform,
 			}),
-			nodeResolve({ preferBuiltins: true }),
+			nodeResolve({
+				preferBuiltins: true,
+				resolveOnly: [/^@tutao\/.*$/, "keytar"],
+			}),
 			// requireReturnsDefault: "preferred" is needed in order to correclty generate a wrapper for the native keytar module
 			commonjs({
 				exclude: "src/**",

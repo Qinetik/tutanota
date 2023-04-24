@@ -1,3 +1,12 @@
+/**
+ * we're using some self-built native node modules, namely keytar and better-sqlite3.
+ * these need to be bundled into the client.
+ * keytar and better-sqlite3 have different ways of getting their native module loaded:
+ * - keytar requires it directly
+ * - better-sqlite3 exports a class whose constructor takes a path to the native module which is then required dynamically.
+ *
+ * this requires us to use different strategies for injecting the right path into the build process.
+ * */
 import fs from "node:fs"
 import path from "node:path"
 import { getNativeLibModulePath } from "./nativeLibraryProvider.js"
@@ -34,10 +43,9 @@ export function sqliteNativeBannerPlugin({ environment, rootDir, dstPath, native
 }
 
 /**
- * Rollup plugin which injects path to better-sqlite3 native code.
- * See DesktopMain.
+ * Rollup plugin which injects path to keytar native code.
  */
-export function keytarNativePlugin({ rootDir, platform }, log = console.log.bind(console)) {
+export function keytarNativeBannerPlugin({ rootDir, platform }, log = console.log.bind(console)) {
 	let outputPath
 	return {
 		name: "keytar-native-banner-plugin",
