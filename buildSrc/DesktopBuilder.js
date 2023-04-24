@@ -103,8 +103,8 @@ export async function buildDesktop({ dirname, version, platform, updateUrl, name
 			.map((file) => fs.promises.rename(path.join(distDir, "/installers/", file), path.join(outDir, file))),
 	)
 	await Promise.all([
-		fs.promises.rm(path.join(distDir, "/installers/"), { recursive: true }),
-		fs.promises.rm(path.join(distDir, "/node_modules/"), { recursive: true }),
+		fs.promises.rm(path.join(distDir, "/installers/"), { recursive: true, force: true }),
+		fs.promises.rm(path.join(distDir, "/node_modules/"), { recursive: true, force: true }),
 		fs.promises.unlink(path.join(distDir, "/package.json")),
 		fs.promises.unlink(path.join(distDir, "/package-lock.json")),
 	])
@@ -116,7 +116,7 @@ async function rollupDesktop(dirname, outDir, version, platform, disableMinify) 
 		input: path.join(dirname, "src/desktop/DesktopMain.ts"),
 		// some transitive dep of a transitive dev-dep requires https://www.npmjs.com/package/url
 		// which rollup for some reason won't distinguish from the node builtin.
-		external: ["url", "util", "path", "fs", "os", "http", "https", "crypto", "child_process", "electron-updater"],
+		external: ["url", "util", "path", "fs", "os", "http", "https", "crypto", "child_process", "electron"],
 		preserveEntrySignatures: false,
 		plugins: [
 			typescript({

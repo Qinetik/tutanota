@@ -12,6 +12,7 @@ export const dependencyMap = {
 	linkifyjs: path.normalize("./libs/linkify.js"),
 	"linkifyjs/html": path.normalize("./libs/linkify-html.js"),
 	cborg: path.normalize("./libs/cborg.js"),
+	"electron-updater": path.normalize("./libs/electron-updater.mjs"),
 }
 
 /**

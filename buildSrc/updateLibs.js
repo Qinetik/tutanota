@@ -7,6 +7,8 @@ import fs from "fs-extra"
 import path, { dirname } from "node:path"
 import { fileURLToPath } from "node:url"
 import { rollup } from "rollup"
+import { nodeResolve } from "@rollup/plugin-node-resolve"
+import commonjs from "@rollup/plugin-commonjs"
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -28,6 +30,7 @@ const clientDependencies = [
 	{ src: "../node_modules/linkifyjs/dist/linkify-html.module.js", target: "linkify-html.js" },
 	"../node_modules/luxon/build/es6/luxon.js",
 	{ src: "../node_modules/cborg/esm/cborg.js", target: "cborg.js", rollup: true },
+	{ src: "../node_modules/electron-updater/out/main.js", target: "electron-updater.mjs", rollup: rollUpdater },
 ]
 
 run()
@@ -40,8 +43,11 @@ async function copyToLibs(files) {
 	for (let srcFile of files) {
 		let targetName = ""
 		if (srcFile instanceof Object) {
-			if (srcFile.rollup) {
+			if (srcFile.rollup === true) {
 				await roll(srcFile.src, srcFile.target)
+				continue
+			} else if (typeof srcFile.rollup === "function") {
+				await srcFile.rollup(srcFile.src, srcFile.target)
 				continue
 			} else {
 				targetName = srcFile.target
@@ -57,5 +63,38 @@ async function copyToLibs(files) {
 /** Will bundle starting at {@param src} into a single file at {@param target}. */
 async function roll(src, target) {
 	const bundle = await rollup({ input: path.join(__dirname, src) })
+	await bundle.write({ file: path.join(__dirname, "../libs", target) })
+}
+
+/**
+ * specifically roll up electron-updater and all its dependencies into a single esm file.
+ * it's importing some electron internals directly, so we made a comprehensive list of
+ * exclusions to not roll up.
+ */
+async function rollUpdater(src, target) {
+	const bundle = await rollup({
+		input: path.join(__dirname, src),
+		external: [
+			"assert",
+			"child_process",
+			"constants",
+			"crypto",
+			"electron",
+			"events",
+			"fs",
+			"http",
+			"https",
+			"os",
+			"path",
+			"stream",
+			"string_decoder",
+			"tty",
+			"url",
+			"util",
+			"zlib",
+		],
+		plugins: [nodeResolve({ preferBuiltins: true }), commonjs()],
+		output: { format: "es" },
+	})
 	await bundle.write({ file: path.join(__dirname, "../libs", target) })
 }
