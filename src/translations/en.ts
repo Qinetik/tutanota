@@ -1551,7 +1551,6 @@ export default {
 		"yourFolders_action": "YOUR FOLDERS",
 		"yourMessage_label": "Your message",
 		"you_label": "You",
-		// todo: add to phrase
 		"contactLists_label": "Contact lists",
 		"addEntries_action": "Add entries",
 		"noContactFound_msg": "No contacts with this email found",

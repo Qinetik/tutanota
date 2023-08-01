@@ -1537,7 +1537,6 @@ export type TranslationKeyType =
 	| "you_label"
 	| "emptyString_msg"
 	| "cannotAddAttendees_msg"
-	// todo: add to phrase
 	| "contactLists_label"
 	| "addEntries_action"
 	| "noContactFound_msg"
