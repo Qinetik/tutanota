@@ -1545,4 +1545,7 @@ export type TranslationKeyType =
 	| "addContactList_action"
 	| "confirmDeleteContactList_msg"
 	| "contactListExisting_msg"
+	// TODO~ add to phrase, may make these generic
+	| "sharedContactLists_label"
+	| "contactListInvitations_label"
 	| "contactListName_label"

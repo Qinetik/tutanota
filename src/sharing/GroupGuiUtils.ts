@@ -1,8 +1,7 @@
 import type { TranslationKey, TranslationText } from "../misc/LanguageViewModel"
 import { lang } from "../misc/LanguageViewModel"
 import { GroupType } from "../api/common/TutanotaConstants"
-import { ProgrammingError } from "../api/common/error/ProgrammingError"
-import { getDefaultGroupName } from "./GroupUtils"
+import { getDefaultGroupName, ShareableGroupType } from "./GroupUtils"
 import type { ReceivedGroupInvitation } from "../api/entities/sys/TypeRefs.js"
 import type { lazy } from "@tutao/tutanota-utils"
 
@@ -115,7 +114,55 @@ const TEMPLATE_SHARING_TEXTS: lazy<GroupSharingTexts> = () => ({
 		}),
 })
 
-export function getTextsForGroupType(groupType: GroupType): GroupSharingTexts {
+//FIXME~ make actual translations
+const CONTACT_LIST_SHARING_TEXTS: lazy<GroupSharingTexts> = () => ({
+	// TODO~ group name should (probably) just be "contact list", double check how it is used
+	groupNameLabel: "templateGroupName_label",
+	participantsLabel: (groupName) =>
+		lang.get("templateGroupParticipants_label", {
+			"{groupName}": groupName,
+		}),
+	acceptEmailSubject: lang.get("acceptTemplateGroupEmailSubject_msg"),
+	acceptEmailBody: (userName, invitee, groupName) =>
+		lang.get("acceptTemplateGroupEmailBody_msg", {
+			"{recipientName}": userName,
+			"{invitee}": invitee,
+			"{groupName}": groupName,
+		}),
+	declineEmailSubject: lang.get("declineTemplateGroupEmailSubject_msg"),
+	declineEmailBody: (userName, invitee, groupName) =>
+		lang.get("declineTemplateGroupEmailBody_msg", {
+			"{recipientName}": userName,
+			"{invitee}": invitee,
+			"{groupName}": groupName,
+		}),
+	shareEmailSubject: lang.get("shareTemplateGroupEmailSubject_msg"),
+	shareEmailBody: (sharer: string, groupName: string) =>
+		lang.get("shareTemplateGroupEmailBody_msg", {
+			"{inviter}": sharer,
+			"{groupName}": groupName,
+		}),
+	addMemberMessage: (groupName: string) => `${lang.get("shareTemplateGroupWarning_msg")} ${lang.get("shareCalendarWarningAliases_msg")}`,
+	removeMemberMessage: (groupName: string, member: string) =>
+		lang.get("removeTemplateGroupMemberConfirm_msg", {
+			"{member}": member,
+			"{groupName}": groupName,
+		}),
+	sharingNotOrderedUser: lang.get("templateSharingNotOrdered_msg"),
+	sharingNotOrderedAdmin: lang.get("templateSharingNotOrdered_msg"),
+	alreadyGroupMemberMessage: "alreadyTemplateGroupMember_msg",
+	receivedGroupInvitationMessage: `${lang.get("shareTemplateGroupWarning_msg")} ${lang.get("shareCalendarWarningAliases_msg")}`,
+	sharedGroupDefaultCustomName: (invitation) =>
+		lang.get("sharedTemplateGroupDefaultName_label", {
+			"{ownerName}": invitation.inviterName || invitation.inviterMailAddress,
+		}),
+	yourCustomNameLabel: (groupName) =>
+		lang.get("customTemplateListName_label", {
+			"{customName}": groupName,
+		}),
+})
+
+export function getTextsForGroupType(groupType: ShareableGroupType): GroupSharingTexts {
 	switch (groupType) {
 		case GroupType.Calendar:
 			return CALENDAR_SHARING_TEXTS()
@@ -123,7 +170,7 @@ export function getTextsForGroupType(groupType: GroupType): GroupSharingTexts {
 		case GroupType.Template:
 			return TEMPLATE_SHARING_TEXTS()
 
-		default:
-			throw new ProgrammingError(`Group type ${groupType} is not shareable`)
+		case GroupType.ContactList:
+			return CONTACT_LIST_SHARING_TEXTS()
 	}
 }

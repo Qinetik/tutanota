@@ -106,7 +106,7 @@ export class SettingsView extends BaseTopLevelView implements TopLevelView<Setti
 	detailsViewer: UpdatableSettingsDetailsViewer | null = null // the component for the details column. can be set by settings views
 
 	_customDomains: LazyLoaded<string[]>
-	_templateInvitations: ReceivedGroupInvitationsModel
+	_templateInvitations: ReceivedGroupInvitationsModel<GroupType.Template>
 
 	constructor(vnode: Vnode<SettingsViewAttrs>) {
 		super()

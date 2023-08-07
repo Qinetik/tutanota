@@ -11,19 +11,16 @@ import { GENERATED_MAX_ID, isSameId } from "../../api/common/utils/EntityUtils.j
 import { EntityClient } from "../../api/common/EntityClient.js"
 import { GroupManagementFacade } from "../../api/worker/facades/lazy/GroupManagementFacade.js"
 import { LoginController } from "../../api/main/LoginController.js"
-import { GroupInfo } from "../../api/entities/sys/TypeRefs.js"
 import { arrayEquals, debounce, lazyMemoized, memoized } from "@tutao/tutanota-utils"
 import { EntityEventsListener, EntityUpdateData, EventController, isUpdateForTypeRef } from "../../api/main/EventController.js"
 import Stream from "mithril/stream"
 import stream from "mithril/stream"
 import { Router } from "../../gui/ScopedRouter.js"
-import { ContactModel } from "../model/ContactModel.js"
-
-export type ContactListInfo = {
-	name: string
-	groupInfo: GroupInfo
-	groupRoot: ContactListGroupRoot
-}
+import { ContactListInfo, ContactModel } from "../model/ContactModel.js"
+import { ReceivedGroupInvitation } from "../../api/entities/sys/TypeRefs.js"
+import { ReceivedGroupInvitationsModel } from "../../sharing/model/ReceivedGroupInvitationsModel.js"
+import { GroupType, ShareCapability } from "../../api/common/TutanotaConstants.js"
+import { hasCapabilityOnGroup } from "../../sharing/GroupUtils.js"
 
 export class ContactListViewModel {
 	private selectedContactList: Id | null = null
@@ -31,6 +28,7 @@ export class ContactListViewModel {
 	contactsForSelectedEntry: Contact[] = []
 	private listModelStateStream: Stream<unknown> | null = null
 	private sortedContactListInfos: Stream<ReadonlyArray<ContactListInfo>> = stream([])
+	private sortedSharedContactListInfos: Stream<ReadonlyArray<ContactListInfo>> = stream([])
 
 	constructor(
 		private readonly entityClient: EntityClient,
@@ -38,6 +36,7 @@ export class ContactListViewModel {
 		private readonly loginController: LoginController,
 		private readonly eventController: EventController,
 		private readonly contactModel: ContactModel,
+		private readonly contactListInvitations: ReceivedGroupInvitationsModel<GroupType.ContactList>,
 		private readonly router: Router,
 		private readonly updateUi: () => unknown,
 	) {}
@@ -64,6 +63,19 @@ export class ContactListViewModel {
 			this.updateUi()
 			return infos.slice().sort((a, b) => a.name.localeCompare(b.name))
 		})
+		this.sortedSharedContactListInfos = this.contactModel.getSharedContactListInfos().map((infos) => {
+			const selected = this.getSelectedContactListInfo()
+			if (selected && !infos.some((info) => isSameId(info.groupInfo._id, selected.groupInfo._id))) {
+				this.selectedContactList = null
+				this.updateUrl()
+			}
+			this.updateUi()
+			return infos.slice().sort((a, b) => a.name.localeCompare(b.name))
+		})
+
+		this.contactListInvitations.init()
+		// dispose() of the model will end this stream, no need to unsubscribe manually
+		this.contactListInvitations.invitations.map(this.updateUi)
 		await this.contactModel.getLoadedContactListInfos()
 	})
 
@@ -105,7 +117,19 @@ export class ContactListViewModel {
 	}
 
 	getContactListInfo(): ReadonlyArray<ContactListInfo> {
-		return this.sortedContactListInfos()
+		return this.sortedContactListInfos() ?? []
+	}
+
+	getSharedConstListInfos(): ReadonlyArray<ContactListInfo> {
+		return this.sortedSharedContactListInfos() ?? []
+	}
+
+	getContactListInvitations(): Array<ReceivedGroupInvitation> {
+		return this.contactListInvitations.invitations()
+	}
+
+	canEditContactList(contactList: ContactListInfo): boolean {
+		return hasCapabilityOnGroup(this.loginController.getUserController().user, contactList.group, ShareCapability.Write)
 	}
 
 	private readonly updateSelectedContacts = debounce(50, async () => {
@@ -134,7 +158,11 @@ export class ContactListViewModel {
 				return
 			}
 		}
-		this.router.routeTo(`/contactlist/:listId`, { listId: this.selectedContactList })
+		if (this.selectedContactList) {
+			this.router.routeTo(`/contactlist/:listId`, { listId: this.selectedContactList })
+		} else {
+			this.router.routeTo(`/contactlist`, {})
+		}
 	}
 
 	async canCreateContactList(): Promise<boolean> {
@@ -217,11 +245,17 @@ export class ContactListViewModel {
 	}
 
 	private getContactListForEntryListId(listId: string): ContactListInfo | null {
-		return this.sortedContactListInfos().find((contactList) => contactList.groupRoot.recipients === listId) ?? null
+		return (
+			this.getContactListInfo().find((contactList) => contactList.groupRoot.recipients === listId) ??
+			this.getSharedConstListInfos().find((contactList) => contactList.groupRoot.recipients === listId) ??
+			null
+		)
 	}
 
 	dispose() {
 		this.eventController.removeEntityListener(this.entityEventsReceived)
 		this.sortedContactListInfos.end(true)
+		this.sortedSharedContactListInfos.end(true)
+		this.contactListInvitations.dispose()
 	}
 }

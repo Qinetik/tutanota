@@ -1,7 +1,7 @@
 import type { Contact, ContactList } from "../../api/entities/tutanota/TypeRefs.js"
-import { ContactListGroupRootTypeRef, ContactListTypeRef, ContactTypeRef } from "../../api/entities/tutanota/TypeRefs.js"
+import { ContactListGroupRoot, ContactListGroupRootTypeRef, ContactListTypeRef, ContactTypeRef } from "../../api/entities/tutanota/TypeRefs.js"
 import { createRestriction } from "../../search/model/SearchUtils"
-import { groupBy, identity, isNotNull, LazyLoaded, ofClass, promiseMap } from "@tutao/tutanota-utils"
+import { groupBy, isNotNull, LazyLoaded, ofClass, promiseMap } from "@tutao/tutanota-utils"
 import { NotAuthorizedError, NotFoundError } from "../../api/common/error/RestError"
 import { DbError } from "../../api/common/error/DbError"
 import { EntityClient } from "../../api/common/EntityClient"
@@ -11,13 +11,20 @@ import type { SearchFacade } from "../../api/worker/search/SearchFacade"
 import { assertMainOrNode } from "../../api/common/Env"
 import { LoginIncompleteError } from "../../api/common/error/LoginIncompleteError"
 import { cleanMailAddress } from "../../api/common/utils/CommonCalendarUtils.js"
-import { ContactListInfo } from "../view/ContactListViewModel.js"
-import { GroupInfo, GroupInfoTypeRef, GroupMembership, UserTypeRef } from "../../api/entities/sys/TypeRefs.js"
+import { Group, GroupInfo, GroupInfoTypeRef, GroupMembership, GroupTypeRef, UserTypeRef } from "../../api/entities/sys/TypeRefs.js"
 import { EntityEventsListener, EntityUpdateData, EventController, isUpdateForTypeRef } from "../../api/main/EventController.js"
 import Stream from "mithril/stream"
 import stream from "mithril/stream"
 
 assertMainOrNode()
+
+export type ContactListInfo = {
+	name: string
+	groupInfo: GroupInfo
+	group: Group
+	groupRoot: ContactListGroupRoot
+	shared: boolean
+}
 
 export class ContactModel {
 	private contactListId: LazyLoaded<Id | null>
@@ -44,8 +51,12 @@ export class ContactModel {
 
 	/** might be empty if not loaded yet */
 	getContactListInfos(): Stream<ReadonlyArray<ContactListInfo>> {
-		// defensive clone
-		return this.contactListInfo.map(identity)
+		return this.contactListInfo.map((contactListInfos) => contactListInfos.filter((info) => !info.shared))
+	}
+
+	/** might be empty if not loaded yet */
+	getSharedContactListInfos(): Stream<ReadonlyArray<ContactListInfo>> {
+		return this.contactListInfo.map((contactListInfos) => contactListInfos.filter((info) => info.shared))
 	}
 
 	/** Id of the contact list. Is null for external users. */
@@ -153,14 +164,17 @@ export class ContactModel {
 	}
 
 	private async getContactListInfo(groupInfo: GroupInfo): Promise<ContactListInfo> {
+		const group = await this.entityClient.load(GroupTypeRef, groupInfo.group)
 		const groupRoot = await this.entityClient.load(ContactListGroupRootTypeRef, groupInfo.group)
 
 		const { getSharedGroupName } = await import("../../sharing/GroupUtils.js")
 
 		return {
 			name: getSharedGroupName(groupInfo, this.loginController.getUserController(), true),
+			group,
 			groupInfo,
 			groupRoot,
+			shared: !isSameId(group.user, this.loginController.getUserController().userId),
 		}
 	}
 
