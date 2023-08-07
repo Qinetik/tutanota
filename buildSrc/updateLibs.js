@@ -32,6 +32,7 @@ const clientDependencies = [
 	{ src: "../node_modules/cborg/esm/cborg.js", target: "cborg.js", rollup: true },
 	{ src: "../node_modules/electron-updater/out/main.js", target: "electron-updater.mjs", rollup: rollDesktopDep },
 	{ src: "../node_modules/better-sqlite3/lib/index.js", target: "better-sqlite3.mjs", rollup: rollDesktopDep },
+	{ src: "../node_modules/keytar/lib/keytar.js", target: "keytar.mjs", rollup: rollDesktopDep },
 ]
 
 run()
@@ -42,6 +43,7 @@ async function run() {
 
 async function copyToLibs(files) {
 	for (let srcFile of files) {
+		console.log("transforming", srcFile.src || srcFile, "to", srcFile.target || "/libs")
 		let targetName = ""
 		if (srcFile instanceof Object) {
 			if (srcFile.rollup === true) {
@@ -76,7 +78,10 @@ async function rollWebDep(src, target) {
 async function rollDesktopDep(src, target) {
 	const bundle = await rollup({
 		input: path.join(__dirname, src),
+		makeAbsoluteExternalsRelative: true,
 		external: [
+			// we handle .node imports ourselves
+			/\.node$/,
 			"assert",
 			"child_process",
 			"constants",
@@ -100,8 +105,10 @@ async function rollDesktopDep(src, target) {
 			commonjs({
 				// better-sqlite3 uses dynamic require to load the binary.
 				// if there is ever another dependency that uses dynamic require
-				// to load any javascript, we should revisit this.
+				// to load any javascript, we should revisit this and make sure
+				// it's still correct.
 				ignoreDynamicRequires: true,
+				requireReturnsDefault: "preferred",
 			}),
 		],
 		output: { format: "es" },

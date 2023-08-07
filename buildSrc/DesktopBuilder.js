@@ -12,7 +12,7 @@ import { create as createEnv, preludeEnvPlugin } from "./env.js"
 import cp from "node:child_process"
 import util from "node:util"
 import typescript from "@rollup/plugin-typescript"
-import { keytarNativeBannerPlugin, sqliteNativeBannerPlugin } from "./nativeLibraryRollupPlugin.js"
+import { copyNativeModulePlugin, keytarNativeBannerPlugin, sqliteNativeBannerPlugin } from "./nativeLibraryRollupPlugin.js"
 import { fileURLToPath } from "node:url"
 import { getCanonicalPlatformName } from "./buildUtils.js"
 
@@ -116,7 +116,7 @@ async function rollupDesktop(dirname, outDir, version, platform, disableMinify) 
 		input: path.join(dirname, "src/desktop/DesktopMain.ts"),
 		// some transitive dep of a transitive dev-dep requires https://www.npmjs.com/package/url
 		// which rollup for some reason won't distinguish from the node builtin.
-		external: ["url", "util", "path", "fs", "os", "http", "https", "crypto", "child_process", "electron"],
+		external: ["url", "util", "path", "fs", "os", "http", "https", "crypto", "child_process", "electron", /\.node$/],
 		preserveEntrySignatures: false,
 		plugins: [
 			typescript({
@@ -125,15 +125,11 @@ async function rollupDesktop(dirname, outDir, version, platform, disableMinify) 
 			}),
 			resolveLibs(),
 			nativeDepWorkaroundPlugin(),
-			keytarNativeBannerPlugin({
-				rootDir: projectRoot,
-				platform,
-			}),
 			nodeResolve({
 				preferBuiltins: true,
 				resolveOnly: [/^@tutao\/.*$/, "keytar"],
 			}),
-			// requireReturnsDefault: "preferred" is needed in order to correclty generate a wrapper for the native keytar module
+			// requireReturnsDefault: "preferred" is needed in order to correctly generate a wrapper for the native keytar module
 			commonjs({
 				exclude: "src/**",
 				requireReturnsDefault: "preferred",
@@ -141,16 +137,27 @@ async function rollupDesktop(dirname, outDir, version, platform, disableMinify) 
 			}),
 			disableMinify ? undefined : terser(),
 			preludeEnvPlugin(createEnv({ staticUrl: null, version, mode: "Desktop", dist: true })),
-			sqliteNativeBannerPlugin({
-				environment: "electron",
+			copyNativeModulePlugin({
 				rootDir: projectRoot,
-				dstPath: "./build/dist/desktop/better_sqlite3.node",
+				dstPath: "./build/dist/desktop/",
+				platform,
+				nodeModule: "better-sqlite3",
+			}),
+			copyNativeModulePlugin({
+				rootDir: projectRoot,
+				dstPath: "./build/dist/desktop/",
+				platform,
+				nodeModule: "keytar",
+			}),
+			keytarNativeBannerPlugin({
+				nativeBindingPath: "./keytar.node",
+			}),
+			sqliteNativeBannerPlugin({
 				// Relative to the source file from which the .node file is loaded.
 				// In our case it will be desktop/DesktopMain.js, which is located in the same directory.
 				// This depends on the changes we made in our own fork of better_sqlite3.
 				// It's okay to use forward slash here, it is passed to require which can deal with it.
-				nativeBindingPath: "./better_sqlite3.node",
-				platform,
+				nativeBindingPath: "./better-sqlite3.node",
 			}),
 		],
 	})

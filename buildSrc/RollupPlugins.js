@@ -9,10 +9,10 @@ export function nativeDepWorkaroundPlugin() {
 			if (id === "electron") {
 				return false
 			}
-			// There are issues with packaging it so we include it as unprocessed cjs. It doesn't tree-shake well anyway.
-			if (id === "electron-updater") {
-				return false
-			}
+			// FIXME: still needed? // There are issues with packaging it so we include it as unprocessed cjs. It doesn't tree-shake well anyway.
+			//if (id === "electron-updater") {
+			//	return false
+			//}
 			// We currently have an import in Rsa.js which we don't want in Desktop as it pulls the whole worker with it
 			if (id.endsWith("RsaApp")) {
 				return false
