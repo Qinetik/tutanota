@@ -12,7 +12,7 @@ import { create as createEnv, preludeEnvPlugin } from "./env.js"
 import cp from "node:child_process"
 import util from "node:util"
 import typescript from "@rollup/plugin-typescript"
-import { copyNativeModulePlugin, keytarNativeBannerPlugin, sqliteNativeBannerPlugin } from "./nativeLibraryRollupPlugin.js"
+import { copyNativeModulePlugin, nativeBannerPlugin } from "./nativeLibraryRollupPlugin.js"
 import { fileURLToPath } from "node:url"
 import { getCanonicalPlatformName } from "./buildUtils.js"
 
@@ -149,15 +149,13 @@ async function rollupDesktop(dirname, outDir, version, platform, disableMinify) 
 				platform,
 				nodeModule: "keytar",
 			}),
-			keytarNativeBannerPlugin({
-				nativeBindingPath: "./keytar.node",
-			}),
-			sqliteNativeBannerPlugin({
+			nativeBannerPlugin({
 				// Relative to the source file from which the .node file is loaded.
 				// In our case it will be desktop/DesktopMain.js, which is located in the same directory.
 				// This depends on the changes we made in our own fork of better_sqlite3.
 				// It's okay to use forward slash here, it is passed to require which can deal with it.
-				nativeBindingPath: "./better-sqlite3.node",
+				keytar: "./keytar.node",
+				"better-sqlite3": "./better-sqlite3.node",
 			}),
 		],
 	})
