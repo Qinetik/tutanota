@@ -42,8 +42,11 @@ export async function buildWebapp({ version, stage, host, measure, minify, proje
 					}
 				},
 			},
-			// nodeResolve is for oxmsg and our own modules
-			nodeResolve(),
+			// nodeResolve is for our own modules
+			nodeResolve({
+				preferBuiltins: true,
+				resolveOnly: [/^@tutao\/.*$/],
+			}),
 			commonjs(),
 		],
 	})

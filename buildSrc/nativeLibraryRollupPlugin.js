@@ -43,7 +43,7 @@ export function nativeBannerPlugin(nativeBindingPaths, log = console.log.bind(co
 	return {
 		name: "native-banner-plugin",
 		async resolveId(source) {
-			if (source.includes("keytar.node")) return keytarPath
+			if (source.includes("keytar.node")) return { id: keytarPath, external: true }
 		},
 		banner() {
 			return `

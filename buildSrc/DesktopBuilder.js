@@ -1,5 +1,4 @@
 import { resolveLibs } from "./RollupConfig.js"
-import { nativeDepWorkaroundPlugin } from "./RollupPlugins.js"
 import nodeResolve from "@rollup/plugin-node-resolve"
 import fs from "node:fs"
 import path, { dirname } from "node:path"
@@ -116,27 +115,9 @@ async function rollupDesktop(dirname, outDir, version, platform, disableMinify) 
 		input: path.join(dirname, "src/desktop/DesktopMain.ts"),
 		// some transitive dep of a transitive dev-dep requires https://www.npmjs.com/package/url
 		// which rollup for some reason won't distinguish from the node builtin.
-		external: ["url", "util", "path", "fs", "os", "http", "https", "crypto", "child_process", "electron", /\.node$/],
+		external: ["url", "util", "path", "fs", "os", "http", "https", "crypto", "child_process", "electron"],
 		preserveEntrySignatures: false,
 		plugins: [
-			typescript({
-				tsconfig: "tsconfig.json",
-				outDir,
-			}),
-			resolveLibs(),
-			nativeDepWorkaroundPlugin(),
-			nodeResolve({
-				preferBuiltins: true,
-				resolveOnly: [/^@tutao\/.*$/, "keytar"],
-			}),
-			// requireReturnsDefault: "preferred" is needed in order to correctly generate a wrapper for the native keytar module
-			commonjs({
-				exclude: "src/**",
-				requireReturnsDefault: "preferred",
-				ignoreDynamicRequires: true,
-			}),
-			disableMinify ? undefined : terser(),
-			preludeEnvPlugin(createEnv({ staticUrl: null, version, mode: "Desktop", dist: true })),
 			copyNativeModulePlugin({
 				rootDir: projectRoot,
 				dstPath: "./build/dist/desktop/",
@@ -149,6 +130,23 @@ async function rollupDesktop(dirname, outDir, version, platform, disableMinify) 
 				platform,
 				nodeModule: "keytar",
 			}),
+			typescript({
+				tsconfig: "tsconfig.json",
+				outDir,
+			}),
+			resolveLibs(),
+			nodeResolve({
+				preferBuiltins: true,
+				resolveOnly: [/^@tutao\/.*$/],
+			}),
+			// requireReturnsDefault: "preferred" is needed in order to correctly generate a wrapper for the native keytar module
+			commonjs({
+				exclude: "src/**",
+				requireReturnsDefault: "preferred",
+				ignoreDynamicRequires: true,
+			}),
+			disableMinify ? undefined : terser(),
+			preludeEnvPlugin(createEnv({ staticUrl: null, version, mode: "Desktop", dist: true })),
 			nativeBannerPlugin({
 				// Relative to the source file from which the .node file is loaded.
 				// In our case it will be desktop/DesktopMain.js, which is located in the same directory.
