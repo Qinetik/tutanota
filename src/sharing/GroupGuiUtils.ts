@@ -27,7 +27,7 @@ export type GroupSharingTexts = {
 const CALENDAR_SHARING_TEXTS: lazy<GroupSharingTexts> = () => ({
 	groupNameLabel: "calendarName_label",
 	participantsLabel: (groupName) =>
-		lang.get("participants_label", {
+		lang.get("calendarParticipants_label", {
 			"{name}": groupName,
 		}),
 	acceptEmailSubject: lang.get("shareCalendarAcceptEmailSubject_msg"),
@@ -51,7 +51,7 @@ const CALENDAR_SHARING_TEXTS: lazy<GroupSharingTexts> = () => ({
 			"{inviter}": sender,
 			"{calendarName}": calendarName,
 		}),
-	addMemberMessage: (_) => `${lang.get("shareCalendarWarning_msg")} ${lang.get("shareCalendarWarningAliases_msg")}`,
+	addMemberMessage: (_) => `${lang.get("shareCalendarWarning_msg")} ${lang.get("shareWarningAliases_msg")}`,
 	removeMemberMessage: (calendarName, invitee) =>
 		lang.get("removeCalendarParticipantConfirm_msg", {
 			"{participant}": invitee,
@@ -59,11 +59,11 @@ const CALENDAR_SHARING_TEXTS: lazy<GroupSharingTexts> = () => ({
 		}),
 	sharingNotOrderedAdmin: lang.get("sharingFeatureNotOrderedAdmin_msg"),
 	sharingNotOrderedUser: lang.get("sharingFeatureNotOrderedUser_msg"),
-	alreadyGroupMemberMessage: "alreadyMember_msg",
-	receivedGroupInvitationMessage: `${lang.get("shareCalendarWarning_msg")} ${lang.get("shareCalendarWarningAliases_msg")}`,
+	alreadyGroupMemberMessage: "sharedCalendarAlreadyMember_msg",
+	receivedGroupInvitationMessage: `${lang.get("shareCalendarWarning_msg")} ${lang.get("shareWarningAliases_msg")}`,
 	sharedGroupDefaultCustomName: (groupOwnerName) => getDefaultGroupName(GroupType.Calendar),
 	yourCustomNameLabel: (groupName) =>
-		lang.get("customName_label", {
+		lang.get("calendarCustomName_label", {
 			"{customName}": groupName,
 		}),
 })
@@ -71,93 +71,93 @@ const CALENDAR_SHARING_TEXTS: lazy<GroupSharingTexts> = () => ({
 const TEMPLATE_SHARING_TEXTS: lazy<GroupSharingTexts> = () => ({
 	groupNameLabel: "templateGroupName_label",
 	participantsLabel: (groupName) =>
-		lang.get("templateGroupParticipants_label", {
+		lang.get("sharedGroupParticipants_label", {
 			"{groupName}": groupName,
 		}),
 	acceptEmailSubject: lang.get("acceptTemplateGroupEmailSubject_msg"),
 	acceptEmailBody: (userName, invitee, groupName) =>
-		lang.get("acceptTemplateGroupEmailBody_msg", {
+		`${lang.get("sharedGroupAcceptEmailBody_msg", {
 			"{recipientName}": userName,
 			"{invitee}": invitee,
 			"{groupName}": groupName,
-		}),
+		})} ${lang.get("automatedMessage_msg")}`,
 	declineEmailSubject: lang.get("declineTemplateGroupEmailSubject_msg"),
 	declineEmailBody: (userName, invitee, groupName) =>
-		lang.get("declineTemplateGroupEmailBody_msg", {
+		`${lang.get("sharedGroupDeclineEmailBody_msg", {
 			"{recipientName}": userName,
 			"{invitee}": invitee,
 			"{groupName}": groupName,
-		}),
+		})} ${lang.get("automatedMessage_msg")}`,
 	shareEmailSubject: lang.get("shareTemplateGroupEmailSubject_msg"),
 	shareEmailBody: (sharer: string, groupName: string) =>
 		lang.get("shareTemplateGroupEmailBody_msg", {
 			"{inviter}": sharer,
 			"{groupName}": groupName,
 		}),
-	addMemberMessage: (groupName: string) => `${lang.get("shareTemplateGroupWarning_msg")} ${lang.get("shareCalendarWarningAliases_msg")}`,
+	addMemberMessage: (groupName: string) => `${lang.get("shareGroupWarning_msg")} ${lang.get("shareWarningAliases_msg")}`,
 	removeMemberMessage: (groupName: string, member: string) =>
-		lang.get("removeTemplateGroupMemberConfirm_msg", {
+		lang.get("removeSharedMemberConfirm_msg", {
 			"{member}": member,
 			"{groupName}": groupName,
 		}),
+	// FIXME~ take the not ordered ones out?
 	sharingNotOrderedUser: lang.get("templateSharingNotOrdered_msg"),
 	sharingNotOrderedAdmin: lang.get("templateSharingNotOrdered_msg"),
-	alreadyGroupMemberMessage: "alreadyTemplateGroupMember_msg",
-	receivedGroupInvitationMessage: `${lang.get("shareTemplateGroupWarning_msg")} ${lang.get("shareCalendarWarningAliases_msg")}`,
+	alreadyGroupMemberMessage: "alreadySharedGroupMember_msg",
+	receivedGroupInvitationMessage: `${lang.get("shareGroupWarning_msg")} ${lang.get("shareWarningAliases_msg")}`,
 	sharedGroupDefaultCustomName: (invitation) =>
 		lang.get("sharedTemplateGroupDefaultName_label", {
 			"{ownerName}": invitation.inviterName || invitation.inviterMailAddress,
 		}),
 	yourCustomNameLabel: (groupName) =>
-		lang.get("customTemplateListName_label", {
+		lang.get("customName_label", {
 			"{customName}": groupName,
 		}),
 })
 
-//FIXME~ make actual translations
 const CONTACT_LIST_SHARING_TEXTS: lazy<GroupSharingTexts> = () => ({
-	// TODO~ group name should (probably) just be "contact list", double check how it is used
-	groupNameLabel: "templateGroupName_label",
+	groupNameLabel: "contactListName_label",
 	participantsLabel: (groupName) =>
-		lang.get("templateGroupParticipants_label", {
+		lang.get("sharedGroupParticipants_label", {
 			"{groupName}": groupName,
 		}),
-	acceptEmailSubject: lang.get("acceptTemplateGroupEmailSubject_msg"),
+	acceptEmailSubject: lang.get("acceptContactListEmailSubject_msg"),
 	acceptEmailBody: (userName, invitee, groupName) =>
-		lang.get("acceptTemplateGroupEmailBody_msg", {
+		`${lang.get("sharedGroupAcceptEmailBody_msg", {
 			"{recipientName}": userName,
 			"{invitee}": invitee,
 			"{groupName}": groupName,
-		}),
-	declineEmailSubject: lang.get("declineTemplateGroupEmailSubject_msg"),
+		})} ${lang.get("automatedMessage_msg")}`,
+	declineEmailSubject: lang.get("declineContactListEmailSubject_msg"),
 	declineEmailBody: (userName, invitee, groupName) =>
-		lang.get("declineTemplateGroupEmailBody_msg", {
+		`${lang.get("sharedGroupDeclineEmailBody_msg", {
 			"{recipientName}": userName,
 			"{invitee}": invitee,
 			"{groupName}": groupName,
-		}),
-	shareEmailSubject: lang.get("shareTemplateGroupEmailSubject_msg"),
+		})} ${lang.get("automatedMessage_msg")}`,
+	shareEmailSubject: lang.get("shareContactListEmailSubject_msg"),
 	shareEmailBody: (sharer: string, groupName: string) =>
-		lang.get("shareTemplateGroupEmailBody_msg", {
+		`${lang.get("shareContactListEmailBody_msg", {
 			"{inviter}": sharer,
 			"{groupName}": groupName,
-		}),
-	addMemberMessage: (groupName: string) => `${lang.get("shareTemplateGroupWarning_msg")} ${lang.get("shareCalendarWarningAliases_msg")}`,
+		})} ${lang.get("automatedMessage_msg")}`,
+	addMemberMessage: (groupName: string) => `${lang.get("shareGroupWarning_msg")} ${lang.get("shareWarningAliases_msg")}`,
 	removeMemberMessage: (groupName: string, member: string) =>
-		lang.get("removeTemplateGroupMemberConfirm_msg", {
+		lang.get("removeSharedMemberConfirm_msg", {
 			"{member}": member,
 			"{groupName}": groupName,
 		}),
+	// FIXME~ take the not ordered ones out?
 	sharingNotOrderedUser: lang.get("templateSharingNotOrdered_msg"),
 	sharingNotOrderedAdmin: lang.get("templateSharingNotOrdered_msg"),
-	alreadyGroupMemberMessage: "alreadyTemplateGroupMember_msg",
-	receivedGroupInvitationMessage: `${lang.get("shareTemplateGroupWarning_msg")} ${lang.get("shareCalendarWarningAliases_msg")}`,
+	alreadyGroupMemberMessage: "alreadySharedGroupMember_msg",
+	receivedGroupInvitationMessage: `${lang.get("shareGroupWarning_msg")} ${lang.get("shareWarningAliases_msg")}`,
 	sharedGroupDefaultCustomName: (invitation) =>
-		lang.get("sharedTemplateGroupDefaultName_label", {
+		lang.get("sharedContactListDefaultName_label", {
 			"{ownerName}": invitation.inviterName || invitation.inviterMailAddress,
 		}),
 	yourCustomNameLabel: (groupName) =>
-		lang.get("customTemplateListName_label", {
+		lang.get("customName_label", {
 			"{customName}": groupName,
 		}),
 })
