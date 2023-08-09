@@ -1545,3 +1545,4 @@ export type TranslationKeyType =
 	| "addContactList_action"
 	| "confirmDeleteContactList_msg"
 	| "contactListExisting_msg"
+	| "contactListName_label"
