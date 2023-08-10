@@ -16,8 +16,6 @@ export type GroupSharingTexts = {
 	readonly shareEmailBody: (sharer: string, groupName: string) => string
 	readonly addMemberMessage: (groupName: string) => string
 	readonly removeMemberMessage: (groupName: string, member: string) => string
-	readonly sharingNotOrderedUser: string
-	readonly sharingNotOrderedAdmin: string
 	readonly alreadyGroupMemberMessage: TranslationText
 	readonly receivedGroupInvitationMessage: string
 	readonly sharedGroupDefaultCustomName: (invitation: ReceivedGroupInvitation) => string
@@ -57,8 +55,6 @@ const CALENDAR_SHARING_TEXTS: lazy<GroupSharingTexts> = () => ({
 			"{participant}": invitee,
 			"{calendarName}": calendarName,
 		}),
-	sharingNotOrderedAdmin: lang.get("sharingFeatureNotOrderedAdmin_msg"),
-	sharingNotOrderedUser: lang.get("sharingFeatureNotOrderedUser_msg"),
 	alreadyGroupMemberMessage: "sharedCalendarAlreadyMember_msg",
 	receivedGroupInvitationMessage: `${lang.get("shareCalendarWarning_msg")} ${lang.get("shareWarningAliases_msg")}`,
 	sharedGroupDefaultCustomName: (groupOwnerName) => getDefaultGroupName(GroupType.Calendar),
@@ -100,9 +96,6 @@ const TEMPLATE_SHARING_TEXTS: lazy<GroupSharingTexts> = () => ({
 			"{member}": member,
 			"{groupName}": groupName,
 		}),
-	// FIXME~ take the not ordered ones out?
-	sharingNotOrderedUser: lang.get("templateSharingNotOrdered_msg"),
-	sharingNotOrderedAdmin: lang.get("templateSharingNotOrdered_msg"),
 	alreadyGroupMemberMessage: "alreadySharedGroupMember_msg",
 	receivedGroupInvitationMessage: `${lang.get("shareGroupWarning_msg")} ${lang.get("shareWarningAliases_msg")}`,
 	sharedGroupDefaultCustomName: (invitation) =>
@@ -147,9 +140,6 @@ const CONTACT_LIST_SHARING_TEXTS: lazy<GroupSharingTexts> = () => ({
 			"{member}": member,
 			"{groupName}": groupName,
 		}),
-	// FIXME~ take the not ordered ones out?
-	sharingNotOrderedUser: lang.get("templateSharingNotOrdered_msg"),
-	sharingNotOrderedAdmin: lang.get("templateSharingNotOrdered_msg"),
 	alreadyGroupMemberMessage: "alreadySharedGroupMember_msg",
 	receivedGroupInvitationMessage: `${lang.get("shareGroupWarning_msg")} ${lang.get("shareWarningAliases_msg")}`,
 	sharedGroupDefaultCustomName: (invitation) =>

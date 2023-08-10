@@ -5,7 +5,7 @@ import { AppHeaderAttrs, Header } from "../../gui/Header.js"
 import { Button, ButtonColor, ButtonType } from "../../gui/base/Button.js"
 import { ContactEditor } from "../ContactEditor"
 import type { Contact } from "../../api/entities/tutanota/TypeRefs.js"
-import { ContactTypeRef } from "../../api/entities/tutanota/TypeRefs.js"
+import { ContactTypeRef, createGroupSettings } from "../../api/entities/tutanota/TypeRefs.js"
 import { ContactListView } from "./ContactListView"
 import { lang } from "../../misc/LanguageViewModel"
 import { assertNotNull, clear, getFirstOrThrow, noOp, ofClass } from "@tutao/tutanota-utils"
@@ -66,6 +66,7 @@ import ColumnEmptyMessageBox from "../../gui/base/ColumnEmptyMessageBox.js"
 import { showGroupSharingDialog } from "../../sharing/view/GroupSharingDialog.js"
 import { ContactListInfo } from "../model/ContactModel.js"
 import { GroupInvitationFolderRow } from "../../sharing/view/GroupInvitationFolderRow.js"
+import { CONTACTLIST_PREFIX } from "../../misc/RouteChange.js"
 
 assertMainOrNode()
 
@@ -282,7 +283,7 @@ export class ContactView extends BaseTopLevelView implements TopLevelView<Contac
 	}
 
 	private inContactListView() {
-		return m.route.get().startsWith("/contactlist")
+		return m.route.get().startsWith(CONTACTLIST_PREFIX)
 	}
 
 	private showingListView() {
@@ -469,8 +470,8 @@ export class ContactView extends BaseTopLevelView implements TopLevelView<Contac
 					}),
 				},
 				[
-					this.contactListViewModel.getContactListInfo().map((tl) => {
-						return this.renderContactListRow(tl)
+					this.contactListViewModel.getContactListInfo().map((cl) => {
+						return this.renderContactListRow(cl, false)
 					}),
 				],
 			),
@@ -482,8 +483,8 @@ export class ContactView extends BaseTopLevelView implements TopLevelView<Contac
 							{
 								name: "sharedContactLists_label",
 							},
-							this.contactListViewModel.getSharedConstListInfos().map((tl) => {
-								return this.renderContactListRow(tl)
+							this.contactListViewModel.getSharedConstListInfos().map((cl) => {
+								return this.renderContactListRow(cl, true)
 							}),
 						),
 				  )
@@ -543,11 +544,11 @@ export class ContactView extends BaseTopLevelView implements TopLevelView<Contac
 		)
 	}
 
-	private renderContactListRow(contactListInfo: ContactListInfo) {
+	private renderContactListRow(contactListInfo: ContactListInfo, shared: boolean) {
 		const contactListButton: NavButtonAttrs = {
 			label: () => contactListInfo.name,
 			icon: () => Icons.People,
-			href: () => `/contactlist/${contactListInfo.groupRoot.recipients}`,
+			href: () => `${CONTACTLIST_PREFIX}/${contactListInfo.groupRoot.recipients}`,
 			disableHoverBackground: true,
 			click: () => {
 				this.contactListViewModel.updateSelectedContactList(contactListInfo.groupRoot.recipients)
@@ -555,7 +556,7 @@ export class ContactView extends BaseTopLevelView implements TopLevelView<Contac
 			},
 		}
 
-		const moreButton = this.createContactListMoreButton(contactListInfo)
+		const moreButton = this.createContactListMoreButton(contactListInfo, shared)
 
 		return m(".folders.mlr-button.border-radius-small.state-bg", { style: { background: isNavButtonSelected(contactListButton) ? stateBgHover : "" } }, [
 			m(".folder-row.flex-space-between.plr-button.row-selected", [
@@ -570,7 +571,7 @@ export class ContactView extends BaseTopLevelView implements TopLevelView<Contac
 		])
 	}
 
-	createContactListMoreButton(contactListInfo: ContactListInfo) {
+	createContactListMoreButton(contactListInfo: ContactListInfo, shared: boolean) {
 		return attachDropdown({
 			mainButtonAttrs: {
 				title: "more_label",
@@ -584,9 +585,13 @@ export class ContactView extends BaseTopLevelView implements TopLevelView<Contac
 						label: "edit_action",
 						icon: Icons.Edit,
 						click: () => {
-							showContactListNameEditor(contactListInfo.name, (newName) =>
-								this.contactListViewModel.updateContactList(contactListInfo, newName, []),
-							)
+							showContactListNameEditor(contactListInfo.name, (newName) => {
+								if (shared) {
+									this.editSharedCalendar(contactListInfo, newName)
+								} else {
+									this.contactListViewModel.updateContactList(contactListInfo, newName, [])
+								}
+							})
 						},
 					},
 					{
@@ -596,18 +601,46 @@ export class ContactView extends BaseTopLevelView implements TopLevelView<Contac
 							showGroupSharingDialog(contactListInfo.groupInfo, true)
 						},
 					},
-					{
-						label: "delete_action",
-						icon: Icons.Trash,
-						click: async () => {
-							if (await Dialog.confirm("confirmDeleteContactList_msg")) {
-								this.contactListViewModel.deleteContactList(contactListInfo)
-							}
-						},
-					},
+					this.contactListViewModel.checkIsGroupOwner(contactListInfo)
+						? {
+								label: "delete_action",
+								icon: Icons.Trash,
+								click: async () => {
+									if (await Dialog.confirm("confirmDeleteContactList_msg")) {
+										this.contactListViewModel.deleteContactList(contactListInfo)
+									}
+								},
+						  }
+						: {
+								label: "leaveGroup_action",
+								icon: Icons.Trash,
+								click: async () => {
+									if (await Dialog.confirm(() => lang.get("confirmLeaveSharedGroup_msg", { "{groupName}": contactListInfo.name }))) {
+										return this.contactListViewModel.removeUserFromContactList(contactListInfo)
+									}
+								},
+						  },
 				]
 			},
 		})
+	}
+
+	editSharedCalendar(contactListInfo: ContactListInfo, newName: string) {
+		const { userSettingsGroupRoot } = locator.logins.getUserController()
+		const existingGroupSettings = userSettingsGroupRoot.groupSettings.find((gc) => gc.group === contactListInfo.groupInfo.group) ?? null
+
+		if (existingGroupSettings) {
+			existingGroupSettings.name = newName
+		} else {
+			const newGroupSettings = Object.assign(createGroupSettings(), {
+				group: contactListInfo.group,
+				name: newName,
+			})
+		}
+
+		locator.entityClient.update(userSettingsGroupRoot)
+		// Updating the contactListInfo.name directly, so it updates for the user right away
+		contactListInfo.name = newName
 	}
 
 	_mergeAction(): Promise<void> {

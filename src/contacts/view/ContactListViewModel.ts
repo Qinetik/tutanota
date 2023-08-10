@@ -7,7 +7,7 @@ import {
 	ContactListGroupRootTypeRef,
 	createContactListEntry,
 } from "../../api/entities/tutanota/TypeRefs.js"
-import { GENERATED_MAX_ID, isSameId } from "../../api/common/utils/EntityUtils.js"
+import { GENERATED_MAX_ID, getEtId, isSameId } from "../../api/common/utils/EntityUtils.js"
 import { EntityClient } from "../../api/common/EntityClient.js"
 import { GroupManagementFacade } from "../../api/worker/facades/lazy/GroupManagementFacade.js"
 import { LoginController } from "../../api/main/LoginController.js"
@@ -20,7 +20,8 @@ import { ContactListInfo, ContactModel } from "../model/ContactModel.js"
 import { ReceivedGroupInvitation } from "../../api/entities/sys/TypeRefs.js"
 import { ReceivedGroupInvitationsModel } from "../../sharing/model/ReceivedGroupInvitationsModel.js"
 import { GroupType, ShareCapability } from "../../api/common/TutanotaConstants.js"
-import { hasCapabilityOnGroup } from "../../sharing/GroupUtils.js"
+import { hasCapabilityOnGroup, isSharedGroupOwner } from "../../sharing/GroupUtils.js"
+import { locator } from "../../api/main/MainLocator.js"
 
 export class ContactListViewModel {
 	private selectedContactList: Id | null = null
@@ -240,6 +241,10 @@ export class ContactListViewModel {
 		}
 	}
 
+	removeUserFromContactList(contactList: ContactListInfo) {
+		return locator.groupManagementFacade.removeUserFromGroup(getEtId(this.loginController.getUserController().user), contactList.groupInfo.group)
+	}
+
 	async deleteSelectedEntries() {
 		await this.deleteContactListEntries(this.getSelectedContactListEntries() ?? [])
 	}
@@ -250,6 +255,10 @@ export class ContactListViewModel {
 			this.getSharedConstListInfos().find((contactList) => contactList.groupRoot.recipients === listId) ??
 			null
 		)
+	}
+
+	checkIsGroupOwner(contactList: ContactListInfo) {
+		return isSharedGroupOwner(contactList.group, getEtId(this.loginController.getUserController().user))
 	}
 
 	dispose() {

@@ -155,8 +155,12 @@ export class ContactModel {
 		const contactListInfo = (
 			await promiseMap(
 				await promiseMap(contactListMemberships, (rlm: GroupMembership) => this.entityClient.load(GroupInfoTypeRef, rlm.groupInfo)),
-				// we might still have a membership for a short time when the group root is already deleted
-				(groupInfo) => this.getContactListInfo(groupInfo).catch(ofClass(NotFoundError, () => null)),
+				// need to catch both NotFoundError and NotAuthorizedError, as we might still have a membership for a short time
+				// when the group root is already deleted, or we deleted our membership
+				(groupInfo) =>
+					this.getContactListInfo(groupInfo)
+						.catch(ofClass(NotFoundError, () => null))
+						.catch(ofClass(NotAuthorizedError, () => null)),
 			)
 		).filter(isNotNull)
 

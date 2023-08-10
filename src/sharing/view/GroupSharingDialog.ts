@@ -243,8 +243,6 @@ async function showAddParticipantDialog(model: GroupSharingModel, texts: GroupSh
 							const { getAvailablePlansWithSharing } = await import("../../subscription/SubscriptionUtils.js")
 							const plans = await getAvailablePlansWithSharing()
 							await showPlanUpgradeRequiredDialog(plans)
-						} else {
-							Dialog.message(() => `${texts.sharingNotOrderedUser} ${lang.get("contactAdmin_msg")}`)
 						}
 					} else if (e instanceof UserError) {
 						showUserError(e)

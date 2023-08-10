@@ -1555,14 +1555,6 @@ export default {
 		"yourFolders_action": "Ihre ORDNER",
 		"yourMessage_label": "Ihre Nachricht",
 		"you_label": "Sie",
-		"contactLists_label": "Kontaktliste",
-		"addEntries_action": "Einträge hinzufügen",
-		"noContactFound_msg": "Kein Kontakt mit dieser E-Mail-Adresse gefunden",
-		"editContactList_action": "Kontaktliste bearbeiten",
-		"nbrOfEntriesSelected_msg": "{nbr} Einträge ausgewählt",
-		"addContactList_action": "Kontaktliste hinzufügen",
-		"confirmDeleteContactList_msg": "Sind Sie sicher, dass Sie diese Kontaktliste löschen möchten? Alle enthaltenen Einträgen werden gelöscht und können nicht wiederhergestellt werden.",
-		"contactListExisting_msg": "Ihr Account enthält noch eine Kontaktliste. Bitte entfernen Sie die Kontaktliste.",
 		"contactListName_label": "Name der Kontaktliste"
 	}
 }

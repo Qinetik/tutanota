@@ -1562,3 +1562,4 @@ export type TranslationKeyType =
 	| "alreadySharedGroupMember_msg"
 	| "sharedContactListDefaultName_label"
 	| "customName_label"
+	| "confirmLeaveSharedGroup_msg"

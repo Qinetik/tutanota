@@ -1551,14 +1551,6 @@ export default {
 		"yourFolders_action": "YOUR FOLDERS",
 		"yourMessage_label": "Your message",
 		"you_label": "You",
-		"contactLists_label": "Contact lists",
-		"addEntries_action": "Add entries",
-		"noContactFound_msg": "No contacts with this email found",
-		"editContactList_action": "Edit contact list",
-		"nbrOfEntriesSelected_msg": "{nbr} entries selected",
-		"addContactList_action": "Add contact list",
-		"confirmDeleteContactList_msg": "Are you sure you want to delete this contact list? All included entries will be lost and can't be restored.",
-		"contactListExisting_msg": "A contact list still exists. Please remove the contact list.",
 		// TODO~ add to phrase
 		"sharedContactLists_label": "Shared contact lists",
 		"contactListInvitations_label": "Contact list invitations",
@@ -1575,6 +1567,7 @@ export default {
 		"removeSharedMemberConfirm_msg": "Are you sure you want to remove {member} from \"{groupName}\"?",
 		"alreadySharedGroupMember_msg": "You are already a member and will have to remove yourself from the group before you can accept this invitation.",
 		"sharedContactListDefaultName_label": "{ownerName}'s Contact List",
-		"customName_label": "Your custom name: {customName}"
+		"customName_label": "Your custom name: {customName}",
+		"confirmLeaveSharedGroup_msg": "Are you sure you want to stop using \"{groupName}\"? The owner would have to re-invite you."
 	}
 }
