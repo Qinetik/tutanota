@@ -21,7 +21,6 @@ export class UpdaterWrapper {
 		}
 	}
 
-	// we're using require() here because dynamic import() does not manage to resolve the module even though it's there.
 	electronUpdater: AppUpdater = env.dist ? autoUpdater : downcast<AppUpdater>(fakeAutoUpdater)
 }
 

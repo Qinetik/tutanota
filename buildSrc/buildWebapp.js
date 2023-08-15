@@ -32,7 +32,7 @@ export async function buildWebapp({ version, stage, host, measure, minify, proje
 	const polyfillBundle = await rollup({
 		input: ["src/polyfill.ts"],
 		plugins: [
-			typescript({ outputToFilesystem: true }),
+			typescript(),
 			minify && terser(),
 			{
 				name: "append-libs",

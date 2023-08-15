@@ -4,7 +4,6 @@ import fs from "node:fs"
 import path, { dirname } from "node:path"
 import { rollup } from "rollup"
 import terser from "@rollup/plugin-terser"
-import commonjs from "@rollup/plugin-commonjs"
 import electronBuilder from "electron-builder"
 import generatePackageJson from "./electron-package-json-template.js"
 import { create as createEnv, preludeEnvPlugin } from "./env.js"
@@ -138,12 +137,6 @@ async function rollupDesktop(dirname, outDir, version, platform, disableMinify) 
 			nodeResolve({
 				preferBuiltins: true,
 				resolveOnly: [/^@tutao\/.*$/],
-			}),
-			// requireReturnsDefault: "preferred" is needed in order to correctly generate a wrapper for the native keytar module
-			commonjs({
-				exclude: "src/**",
-				requireReturnsDefault: "preferred",
-				ignoreDynamicRequires: true,
 			}),
 			disableMinify ? undefined : terser(),
 			preludeEnvPlugin(createEnv({ staticUrl: null, version, mode: "Desktop", dist: true })),

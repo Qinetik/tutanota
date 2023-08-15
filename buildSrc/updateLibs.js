@@ -43,7 +43,6 @@ async function run() {
 
 async function copyToLibs(files) {
 	for (let srcFile of files) {
-		console.log("transforming", srcFile.src || srcFile, "to", srcFile.target || "/libs")
 		let targetName = ""
 		if (srcFile instanceof Object) {
 			if (srcFile.rollup === true) {
@@ -108,10 +107,8 @@ async function rollDesktopDep(src, target) {
 				// to load any javascript, we should revisit this and make sure
 				// it's still correct.
 				ignoreDynamicRequires: true,
-				requireReturnsDefault: "preferred",
 			}),
 		],
-		output: { format: "es" },
 	})
-	await bundle.write({ file: path.join(__dirname, "../libs", target) })
+	await bundle.write({ file: path.join(__dirname, "../libs", target), format: "es" })
 }
