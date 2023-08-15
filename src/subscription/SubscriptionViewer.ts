@@ -388,13 +388,12 @@ export class SubscriptionViewer implements UpdatableSettingsViewer {
 	}
 
 	private async updateAliasField(userGroupId: Id): Promise<void> {
-		const data = createMailAddressAliasGetIn({ targetGroup: userGroupId })
-		const aliasServiceReturn = await locator.serviceExecutor.get(MailAddressAliasService, data)
+		const counters = await locator.mailAddressFacade.getAliasCounters(userGroupId)
 		this._emailAliasFieldValue(
 			lang.get("amountUsedAndActivatedOf_label", {
-				"{used}": aliasServiceReturn.usedAliases,
-				"{active}": aliasServiceReturn.enabledAliases,
-				"{totalAmount}": aliasServiceReturn.totalAliases,
+				"{used}": counters.usedAliases,
+				"{active}": counters.enabledAliases,
+				"{totalAmount}": counters.totalAliases,
 			}),
 		)
 	}

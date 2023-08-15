@@ -431,6 +431,7 @@ class MainLocator {
 			this.eventController,
 			this.logins.getUserController().userGroupInfo,
 			nameChanger,
+			await this.redraw(),
 		)
 	}
 
@@ -445,6 +446,7 @@ class MainLocator {
 			this.eventController,
 			userGroupInfo,
 			nameChanger,
+			await this.redraw(),
 		)
 	}
 

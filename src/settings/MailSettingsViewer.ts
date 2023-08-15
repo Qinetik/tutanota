@@ -84,7 +84,7 @@ export class MailSettingsViewer implements UpdatableSettingsViewer {
 		// normally we would maybe like to get it as an argument but these viewers are created in an odd way
 		locator.mailAddressTableModelForOwnMailbox().then((model) => {
 			this.mailAddressTableModel = model
-			model.init().then(m.redraw)
+			m.redraw()
 		})
 		m.redraw()
 

@@ -1554,6 +1554,7 @@ export default {
 		"yourCalendars_label": "Deine Kalender",
 		"yourFolders_action": "DEINE ORDNER",
 		"yourMessage_label": "Deine Nachricht",
-		"you_label": "Du"
+		"you_label": "Du",
+		"mailAddressInfo_msg": "Eigene Domänenadressen werden nicht auf das Limit angerechnet. Deaktivierte E-Mail-Adressen können einem anderen Benutzer oder einer Mailbox zugewiesen werden."
 	}
 }

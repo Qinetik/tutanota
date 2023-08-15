@@ -1550,6 +1550,8 @@ export default {
 		"yourCalendars_label": "Your calendars",
 		"yourFolders_action": "YOUR FOLDERS",
 		"yourMessage_label": "Your message",
-		"you_label": "You"
+		"you_label": "You",
+		// FIXME: pull from Phrase
+		"mailAddressInfo_msg": "Custom domain addresses do not count towards the limit. Disabled mail addresses can be reassigned to another user or mailbox."
 	}
 }

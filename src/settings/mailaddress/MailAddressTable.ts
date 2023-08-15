@@ -1,13 +1,12 @@
-import m, { Children, Component, Vnode, VnodeDOM } from "mithril"
+import m, { Children, Component, Vnode } from "mithril"
 import { Dialog } from "../../gui/base/Dialog.js"
-import type { TableAttrs, TableLineAttrs } from "../../gui/base/Table.js"
+import type { TableLineAttrs } from "../../gui/base/Table.js"
 import { ColumnWidth, Table } from "../../gui/base/Table.js"
 import { lang, TranslationKey } from "../../misc/LanguageViewModel.js"
 import { LimitReachedError } from "../../api/common/error/RestError.js"
 import { ofClass } from "@tutao/tutanota-utils"
 import { Icons } from "../../gui/base/icons/Icons.js"
 import { showProgressDialog } from "../../gui/dialogs/ProgressDialog.js"
-import Stream from "mithril/stream"
 import { ExpanderButton, ExpanderPanel } from "../../gui/base/Expander.js"
 import { attachDropdown, DropdownButtonAttrs } from "../../gui/base/Dropdown.js"
 import { showNotAvailableForFreeDialog } from "../../misc/SubscriptionDialogs.js"
@@ -27,41 +26,27 @@ export type MailAddressTableAttrs = {
 /** Shows a table with all aliases and ability to enable/disable them, add more and set names. */
 export class MailAddressTable implements Component<MailAddressTableAttrs> {
 	private expanded: boolean = false
-	private redrawSubscription: Stream<void> | null = null
 
-	oncreate(vnode: VnodeDOM<MailAddressTableAttrs>) {
-		vnode.attrs.model.init()
-		this.redrawSubscription = vnode.attrs.model.redraw.map(m.redraw)
-	}
-
-	onremove() {
-		this.redrawSubscription?.end(true)
-	}
-
-	view(vnode: Vnode<MailAddressTableAttrs>): Children {
-		const a = vnode.attrs
-		const addAliasButtonAttrs: IconButtonAttrs | null = a.model.userCanModifyAliases()
+	view({ attrs }: Vnode<MailAddressTableAttrs>): Children {
+		const { model } = attrs
+		const addAliasButtonAttrs: IconButtonAttrs | null = model.userCanModifyAliases()
 			? {
 					title: "addEmailAlias_label",
-					click: () => this.onAddAlias(a),
+					click: () => this.onAddAlias(attrs),
 					icon: Icons.Add,
 					size: ButtonSize.Compact,
 			  }
 			: null
-		const aliasesTableAttrs: TableAttrs = {
-			columnHeading: ["mailAddress_label", "state_label"],
-			columnWidths: [ColumnWidth.Largest, ColumnWidth.Small],
-			showActionButtonColumn: true,
-			addButtonAttrs: addAliasButtonAttrs,
-			lines: getAliasLineAttrs(a),
-		}
 		return [
 			m(".flex-space-between.items-center.mt-l.mb-s", [
 				m(".h4", lang.get("mailAddresses_label")),
 				m(ExpanderButton, {
 					label: "show_action",
 					expanded: this.expanded,
-					onExpandedChange: (v) => (this.expanded = v),
+					onExpandedChange: (v) => {
+						this.expanded = v
+						model.init()
+					},
 				}),
 			]),
 			m(
@@ -69,8 +54,27 @@ export class MailAddressTable implements Component<MailAddressTableAttrs> {
 				{
 					expanded: this.expanded,
 				},
-				m(Table, aliasesTableAttrs),
+				m(Table, {
+					columnHeading: ["mailAddress_label", "state_label"],
+					columnWidths: [ColumnWidth.Largest, ColumnWidth.Small],
+					showActionButtonColumn: true,
+					addButtonAttrs: addAliasButtonAttrs,
+					lines: getAliasLineAttrs(attrs),
+				}),
 			),
+			model.aliasCount
+				? [
+						m(
+							".mt-s",
+							lang.get("amountUsedAndActivatedOf_label", {
+								"{used}": model.aliasCount.usedAliases,
+								"{active}": model.aliasCount.enabledAliases,
+								"{totalAmount}": model.aliasCount.totalAliases,
+							}),
+						),
+						m(".small.mt-s", lang.get("mailAddressInfo_msg")),
+				  ]
+				: null,
 		]
 	}
 
