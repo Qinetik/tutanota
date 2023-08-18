@@ -587,7 +587,7 @@ export class ContactView extends BaseTopLevelView implements TopLevelView<Contac
 						click: () => {
 							showContactListNameEditor(contactListInfo.name, (newName) => {
 								if (shared) {
-									this.editSharedCalendar(contactListInfo, newName)
+									this.editSharedContactList(contactListInfo, newName)
 								} else {
 									this.contactListViewModel.updateContactList(contactListInfo, newName, [])
 								}
@@ -625,7 +625,7 @@ export class ContactView extends BaseTopLevelView implements TopLevelView<Contac
 		})
 	}
 
-	editSharedCalendar(contactListInfo: ContactListInfo, newName: string) {
+	private editSharedContactList(contactListInfo: ContactListInfo, newName: string) {
 		const { userSettingsGroupRoot } = locator.logins.getUserController()
 		const existingGroupSettings = userSettingsGroupRoot.groupSettings.find((gc) => gc.group === contactListInfo.groupInfo.group) ?? null
 

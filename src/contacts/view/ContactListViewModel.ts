@@ -5,6 +5,7 @@ import {
 	ContactListEntryTypeRef,
 	ContactListGroupRoot,
 	ContactListGroupRootTypeRef,
+	ContactTypeRef,
 	createContactListEntry,
 } from "../../api/entities/tutanota/TypeRefs.js"
 import { GENERATED_MAX_ID, getEtId, isSameId } from "../../api/common/utils/EntityUtils.js"
@@ -198,8 +199,13 @@ export class ContactListViewModel {
 
 	private readonly entityEventsReceived: EntityEventsListener = async (updates: ReadonlyArray<EntityUpdateData>): Promise<void> => {
 		for (const update of updates) {
-			if (this.selectedContactList && isUpdateForTypeRef(ContactListEntryTypeRef, update) && isSameId(this.selectedContactList, update.instanceListId)) {
-				await this.listModel?.entityEventReceived(update.instanceId, update.operation)
+			if (this.selectedContactList) {
+				if (isUpdateForTypeRef(ContactListEntryTypeRef, update) && isSameId(this.selectedContactList, update.instanceListId)) {
+					await this.listModel?.entityEventReceived(update.instanceId, update.operation)
+					//FIXME make sure this elseif is a good idea
+				} else if (isUpdateForTypeRef(ContactTypeRef, update)) {
+					this.updateSelectedContacts()
+				}
 			}
 
 			this.updateUi()
